@@ -14,3 +14,5 @@ from app import routes
 # Spark dependencies
 #sc = SparkContext()
 #sqlc = SQLContext(sc)
+sc = None
+sqlc = None

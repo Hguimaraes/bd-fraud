@@ -18,4 +18,4 @@ if __name__ == '__main__':
 
     # Start the main application and start the web server
     start(args)
-    app.run(port = int(args.port), threaded=True)
+    app.run(port = int(args.port), threaded = True, debug = True)
