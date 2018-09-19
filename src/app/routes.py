@@ -2,6 +2,7 @@ from app import app
 from .engine import Engine
 from .process import start_stream
 from .process import get_stats
+from flask import redirect
 
 # Retrieve the Singleton
 engine = Engine()
@@ -28,3 +29,7 @@ def stream():
 def stats():
     stats = get_stats()
     return stats, 200
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect('/')

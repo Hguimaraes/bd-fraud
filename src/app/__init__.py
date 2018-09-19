@@ -8,7 +8,7 @@ def start(args):
     # Start the big data project for Fraud Detection
     Engine(args).start()
 
-app = Flask(__name__, static_folder = '../static/')
+app = Flask(__name__)
 from app import routes
 
 # Spark dependencies
