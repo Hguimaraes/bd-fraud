@@ -17,4 +17,8 @@ def start_stream():
     
 
 def get_stats():
-    pass
+    # dummy method, @todo implement real one
+    return {
+        'legit': np.random.randint(10, 1000),
+        'fraud': np.random.randint(10, 1000)
+    }

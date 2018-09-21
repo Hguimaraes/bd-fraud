@@ -1,8 +1,14 @@
+
 from app import app
 from .engine import Engine
 from .process import start_stream
 from .process import get_stats
+
+from flask import jsonify
 from flask import redirect
+from flask import Response
+
+import numpy as np
 
 # Retrieve the Singleton
 engine = Engine()
@@ -28,7 +34,7 @@ def stream():
 @app.route('/stats')
 def stats():
     stats = get_stats()
-    return stats, 200
+    return jsonify(stats), 200
 
 @app.errorhandler(404)
 def page_not_found(e):
