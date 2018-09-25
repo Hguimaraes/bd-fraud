@@ -12,23 +12,20 @@ from flask import Flask, request
  
 @main.route("/stats/<int:time_window>", methods=["GET"])
 def get_stats(time_window):
-    #logger.debug("User %s TOP ratings requested", user_id)
-    #top_ratings = recommendation_engine.get_top_ratings(user_id,count)
-    #return json.dumps(top_ratings)
-    pass
+    logger.debug("Statistics from the last %s seconds requested", time_window)
+    stats = fraud_engine.get_stats(time_window)
+    return json.dumps(stats), 200
  
 @main.route("/stream/<int:time_window>", methods=["GET"])
 def start_stream(time_window):
-    #logger.debug("User %s rating requested for movie %s", user_id, movie_id)
-    #ratings = recommendation_engine.get_ratings_for_movie_ids(user_id, [movie_id])
-    #return json.dumps(ratings)
-    pass
+    logger.debug("Starting stream requested. Using a time window of %s seconds.", time_window)
+    msg = fraud_engine.start_stream(time_window)
+    return json.dumps(msg), 200
  
 def create_app(sc, stream_path):
-    #global recommendation_engine 
-    #recommendation_engine = RecommendationEngine(sc, stream_path)    
+    global fraud_engine 
+    fraud_engine = FraudEngine(sc, stream_path)
     
-    #app = Flask(__name__)
-    #app.register_blueprint(main)
-    #return app
-    pass
+    app = Flask(__name__)
+    app.register_blueprint(main)
+    return app

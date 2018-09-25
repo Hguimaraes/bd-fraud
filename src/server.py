@@ -15,7 +15,7 @@ def init_spark_context():
 
     # Defining Spark Context
     sc = SparkContext(conf = conf, pyFiles=['engine.py', 'app.py'])
- 
+
     return sc
  
  
