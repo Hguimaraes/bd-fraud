@@ -29,7 +29,7 @@ class FraudEngine:
         self.sqlc = SparkSession \
             .builder \
             .appName("ifds_server") \
-            .config("spark.sql.warehouse.dir", warehouse_location) \
+            .config("spark.sql.warehouse.dir", self.warehouse_location) \
             .enableHiveSupport() \
             .getOrCreate()
 
