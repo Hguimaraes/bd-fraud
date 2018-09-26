@@ -46,7 +46,7 @@ class FraudEngine:
 
         # Process the input dataframe
         parsed_df = self.__clean_data(hist_data)
-        self.st_data = self.__clean_data(stream_data)
+        self.st_data = self.__clean_data(stream_data, is_fraud = "isFraud")
         
         # Define and train the model
         self.model, self.train_stats = self.__get_model(parsed_df)
@@ -73,8 +73,8 @@ class FraudEngine:
     def __process_stream(self, request):
         pass
 
-    def __clean_data(self, df):
-        ignore = ['isfraud','label']
+    def __clean_data(self, df, is_fraud = "isfraud"):
+        ignore = [is_fraud,'label']
 
         #Removendo colunas não utilizadas
         df = df.drop(*['paysim_id', 'nameorig', 'namedest'])
@@ -90,9 +90,9 @@ class FraudEngine:
         df = df.drop("type_numeric")
 
         #Label encoding
-        label_stringIdx = StringIndexer(inputCol = 'isfraud', outputCol = 'label').fit(df)
+        label_stringIdx = StringIndexer(inputCol = is_fraud, outputCol = 'label').fit(df)
         df = label_stringIdx.transform(df)
-        df = df.drop("isfraud")
+        df = df.drop(is_fraud)
 
         #Vector Assembling
         assembler = VectorAssembler(
