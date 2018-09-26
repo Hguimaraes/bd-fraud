@@ -66,7 +66,7 @@ class FraudEngine:
         # Test and return statistics
         evaluator = BinaryClassificationEvaluator()
         predictions = rfmodel.transform(test)
-        stats = evaluator.evaluatoruate(predictions)
+        stats = evaluator.evaluate(predictions)
 
         return rfmodel, stats
 
