@@ -5,13 +5,11 @@ import threading
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
 from pyspark.ml.feature import StringIndexer
-from pyspark.mllib.linalg import DenseVector
-from pyspark.mllib.regression import LabeledPoint
 from pyspark.ml.feature import OneHotEncoder
-from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.clustering import KMeans
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,8 +18,6 @@ logger = logging.getLogger(__name__)
 @description: Class to abstract all Spark computations
 """
 class FraudEngine:
-    """
-    """
     def __init__(self, sc, dt):
         logger.debug("..:.. Creating instance of the FraudEngine class")
         # Init stream init
@@ -60,6 +56,9 @@ class FraudEngine:
         parsed_df.unpersist()
 
     def __get_model(self, df):
+        # Apply strauss method for balancing the data
+        df = self.__strauss(df)
+
         logger.debug("--- Starting model training")
         train, test = df.randomSplit([0.7, 0.3], seed = 2018)
 
@@ -121,6 +120,41 @@ class FraudEngine:
 
         return df
 
+    def __strauss(self, df, k = 7):
+        # Separe the dataset by labels
+        f_df = df.filter(df.label == 1.0)
+        nf_df = df.filter(df.label == 0.0)
+
+        # Trains a k-means model.
+        kmeans = KMeans().setK(k).setSeed(1)
+        model = kmeans.fit(nf_df)
+
+        # Evaluate clustering by computing Within Set Sum of Squared Errors.
+        wssse = model.computeCost(nf_df)
+        logger.debug("Within Set Sum of Squared Errors = {}".format(wssse))
+
+        # Balanced the data with strauss method
+        cls = model.transform(nf_df)
+
+        d = {}
+        n_list = []
+        for c in range(k):
+            df_temp = cls.filter(cls.prediction == c)
+            n_temp = df_temp.count()
+            
+            n_sample = (n_temp*(0.25)*(2.17**2))/(0.25*(2.17**2)+(n_temp -1)*(0.02**2))
+            ratio = n_sample/n_temp
+            d[c] = df_temp.sample(False, ratio)
+        
+        new_df = d[0]
+        for i in range(1,k):
+            new_df = new_df.union(d[i])
+        new_df = new_df.drop("prediction")
+        new_df = new_df.union(f_df)
+        
+        # Return the new training set
+        return new_df
+
     """
     @description: Retrieve simple statistics from stream table
     """
@@ -134,7 +168,7 @@ class FraudEngine:
         return {'AUC': self.train_stats}
 
     """
-    @description: 
+    @description: @TODO: Implement a stream process
     """
     def start_stream(self, window):
         msg = "A stream de dados teste já foi iniciada, aguarde!"
@@ -142,17 +176,3 @@ class FraudEngine:
             msg = "Iniciando processo de streaming!"
             self.__process_stream(window)
         return {'msg': msg}
-
-# Producer class to send the messages
-#class Producer(threading.Thread):
-#    def __init__(self, data, time_window = 60.0):
-#        # Hyper-parameters
-#        self.data = data
-#    
-#    def run(self):
-#        n = self.data.shape[0]/self.time_window
-#        for index, row in self.data.iterrows():
-#            producer.send(self.topic, row.to_string())
-#            time.sleep(n)
-#
-#        self.producer.close()
