@@ -21,6 +21,7 @@ class FraudEngine:
     """
     """
     def __init__(self, sc, dt):
+        logger.debug("..:.. Creating instance of the FraudEngine class")
         # Spark Context and stream file path
         self.sc = sc
         
@@ -35,9 +36,11 @@ class FraudEngine:
             .getOrCreate()
 
         stream_data = sqlc.read.csv(dt, header = True, inferSchema = True)
+        logger.debug("-- Retrieved data from data stream CSV")
 
         # Read data from database and put into a DF
         hist_data = self.sqlc.sql("SELECT * FROM hist_data")
+        logger.debug("-- Retrieved data from Hive table")
 
         parsed_df = hist_data.drop(*['paysim_id', 'nameorig', 'namedest'])
         parsed_sd = stream_data.drop(*['paysim_id', 'nameorig', 'namedest'])
@@ -50,6 +53,8 @@ class FraudEngine:
         parsed_df = parsed_df.drop("type")
         parsed_sd = parsed_sd.drop("type")
 
+        logger.debug("-- Finished StringIndexer from type column")
+
         # Vector Assembler
         ignore = ['isFraud']
         selectedCols = ['isFraud', 'features']
@@ -57,7 +62,8 @@ class FraudEngine:
         ## Train
         assembler = VectorAssembler(
             inputCols=[x for x in parsed_df.columns if x not in ignore],
-            outputCol='features')
+            outputCol='features'
+        )
 
         final_df = assembler.transform(parsed_df)
         parsed_df = final_df.select(selectedCols)
@@ -78,6 +84,8 @@ class FraudEngine:
         parsed_df.unpersist()
 
     def __get_model(self, hRDD):
+        logger.debug("--- Starting model training")
+
         # Train the model
         lr = LogisticRegression(
             featuresCol = 'features', 
