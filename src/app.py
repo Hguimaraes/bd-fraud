@@ -9,11 +9,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
  
 from flask import Flask, request
+
+@main.route("/train_stats/", methods=["GET"])
+def get_train_stats():
+    logger.debug("Retrieving statistics from training phase")
+    stats = fraud_engine.get_train_stats()
+    return json.dumps(stats), 200
  
-@main.route("/stats/<int:time_window>", methods=["GET"])
-def get_stats(time_window):
-    logger.debug("Statistics from the last %s seconds requested", time_window)
-    stats = fraud_engine.get_stats(time_window)
+@main.route("/stats/", methods=["GET"])
+def get_stats():
+    logger.debug("Retrieving statistics for the new request")
+    stats = fraud_engine.get_stats()
     return json.dumps(stats), 200
  
 @main.route("/stream/<int:time_window>", methods=["GET"])

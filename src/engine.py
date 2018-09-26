@@ -24,6 +24,9 @@ class FraudEngine:
     """
     def __init__(self, sc, dt):
         logger.debug("..:.. Creating instance of the FraudEngine class")
+        # Init stream init
+        self.stream_state = False
+
         # Spark Context and stream file path
         self.sc = sc
         
@@ -70,7 +73,7 @@ class FraudEngine:
 
         return rfmodel, stats
 
-    def __process_stream(self, request):
+    def __process_stream(self, window):
         pass
 
     def __clean_data(self, df, is_fraud = "isfraud"):
@@ -109,24 +112,30 @@ class FraudEngine:
     """
     @description: Retrieve simple statistics from stream table
     """
-    def get_stats(self, window):
+    def get_stats(self):
         pass
+
+    """
+    @description: Return train statistics
+    """
+    def get_train_stats(self):
+        return {'AUC': self.train_stats}
 
     """
     @description: 
     """
     def start_stream(self, window):
-        pass
+        msg = "A stream de dados teste já foi iniciada, aguarde!"
+        if not self.stream_state:
+            msg = "Iniciando processo de streaming!"
+            self.__process_stream(window)
+        return {'msg': msg}
 
-# Producer class to send the messages to Kafka broker
+# Producer class to send the messages
 #class Producer(threading.Thread):
-#    def __init__(self, data, time_window = 60.0, self.address = 'localhost:9092'):
+#    def __init__(self, data, time_window = 60.0):
 #        # Hyper-parameters
 #        self.data = data
-#        self.topic = 'fraud_detection'
-#
-#        # Define Kafka producer to send Message through HTTP
-#        self.producer = KafkaProducer(bootstrap_servers=self.address)
 #    
 #    def run(self):
 #        n = self.data.shape[0]/self.time_window
