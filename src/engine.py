@@ -26,6 +26,7 @@ class FraudEngine:
         logger.debug("..:.. Creating instance of the FraudEngine class")
         # Init stream init
         self.stream_state = False
+        self.stream_stats = {'fraud': 0, 'legit': 0}
 
         # Spark Context and stream file path
         self.sc = sc
@@ -74,7 +75,18 @@ class FraudEngine:
         return rfmodel, stats
 
     def __process_stream(self, window):
-        pass
+        # Block new requests
+        self.stream_state = True
+
+        # @TODO: Implement a method to stream self.st_data in a window of time
+        # Test and return statistics
+        predictions = rfmodel.transform(self.st_data)
+        self.stream_stats = {'fraud': 0, 'legit': 0}
+        
+        # Receive new requests
+        self.stream_state = False
+        
+        return None
 
     def __clean_data(self, df, is_fraud = "isfraud"):
         ignore = [is_fraud,'label']
@@ -113,7 +125,7 @@ class FraudEngine:
     @description: Retrieve simple statistics from stream table
     """
     def get_stats(self):
-        pass
+        return self.stream_stats
 
     """
     @description: Return train statistics
