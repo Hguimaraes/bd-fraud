@@ -74,7 +74,7 @@ class FraudEngine:
         pass
 
     def __clean_data(self, df):
-        ignore = ['isFraud','label']
+        ignore = ['isfraud','label']
 
         #Removendo colunas não utilizadas
         df = df.drop(*['paysim_id', 'nameorig', 'namedest'])
@@ -90,9 +90,9 @@ class FraudEngine:
         df = df.drop("type_numeric")
 
         #Label encoding
-        label_stringIdx = StringIndexer(inputCol = 'isFraud', outputCol = 'label').fit(df)
+        label_stringIdx = StringIndexer(inputCol = 'isfraud', outputCol = 'label').fit(df)
         df = label_stringIdx.transform(df)
-        df = df.drop("isFraud")
+        df = df.drop("isfraud")
 
         #Vector Assembling
         assembler = VectorAssembler(
