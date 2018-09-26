@@ -40,40 +40,10 @@ class FraudEngine:
         hist_data = self.sqlc.sql("SELECT * FROM hist_data")
         logger.debug("-- Retrieved data from Hive table")
 
-        parsed_df = hist_data.drop(*['paysim_id', 'nameorig', 'namedest'])
-        parsed_sd = stream_data.drop(*['paysim_id', 'nameorig', 'namedest'])
+        # Process the input dataframe
+        parsed_df = self.__clean_data(hist_data)
+        self.st_data = self.__clean_data(stream_data)
         
-        # Convert type column
-        indexer = StringIndexer(inputCol="type", outputCol="type_vec").fit(parsed_df)
-        parsed_df = indexer.transform(parsed_df)
-        parsed_sd = indexer.transform(parsed_sd)
-
-        parsed_df = parsed_df.drop("type")
-        parsed_sd = parsed_sd.drop("type")
-
-        logger.debug("-- Finished StringIndexer from type column")
-
-        # Vector Assembler
-        ignore = ['isFraud']
-        selectedCols = ['isFraud', 'features']
-
-        ## Train
-        assembler = VectorAssembler(
-            inputCols=[x for x in parsed_df.columns if x not in ignore],
-            outputCol='features'
-        )
-
-        final_df = assembler.transform(parsed_df)
-        parsed_df = final_df.select(selectedCols)
-
-        ## Test
-        assembler = VectorAssembler(
-            inputCols=[x for x in parsed_df.columns if x not in ignore],
-            outputCol='features')
-
-        final_df = assembler.transform(parsed_sd)
-        self.parsed_sd = final_df.select(selectedCols)
-
         # Define and train the model
         self.model = self.__get_model(parsed_df)
 
@@ -96,6 +66,39 @@ class FraudEngine:
 
     def __process_stream(self, request):
         pass
+
+    def __clean_data(self, df):
+        ignore = ['isFraud','label']
+
+        #Removendo colunas não utilizadas
+        df = df.drop(*['paysim_id', 'nameorig', 'namedest'])
+
+        #String Indexing
+        string_indexer = StringIndexer(inputCol="type", outputCol="type_numeric").fit(df)
+        df = string_indexer.transform(df)
+        df = df.drop(df.type)
+
+        #One-hot encoding
+        encoder = OneHotEncoder(inputCol="type_numeric", outputCol="type_vector")
+        df = encoder.transform(df)
+        df = df.drop("type_numeric")
+
+        #Label encoding
+        label_stringIdx = StringIndexer(inputCol = 'isFraud', outputCol = 'label').fit(df)
+        df = label_stringIdx.transform(df)
+        df = df.drop("isFraud")
+
+        #Vector Assembling
+        assembler = VectorAssembler(
+            inputCols=[x for x in df.columns if x not in ignore],
+            outputCol='features')
+        df = assembler.transform(df)
+
+        # dataframe in the correct format
+        selectedCols = ['label', 'features']
+        df = df.select(selectedCols)
+
+        return df
 
     """
     @description: Retrieve simple statistics from stream table
