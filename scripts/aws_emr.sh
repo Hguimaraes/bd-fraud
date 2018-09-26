@@ -4,3 +4,4 @@ sqoop import --connect "jdbc:mysql://ifds-rds.cmi2faravii8.sa-east-1.rds.amazona
 --delete-target-dir --target-dir /user/hadoop/HIST_DATA --hive-overwrite -m 4
 
 # Move stream data to HDFS
+hadoop distcp s3n://ita-bd-fds/data/data/pays_test.csv /user/ita-fds/

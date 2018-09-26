@@ -2,8 +2,6 @@ import os
 import time
 import logging
 import threading
-import numpy as np
-import pandas as pd
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
 from pyspark.ml.feature import StringIndexer
