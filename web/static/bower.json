@@ -1,0 +1,27 @@
+{
+  "name": "ifds",
+  "description": "Fraud Detection System using Big data analytics tools",
+  "authors": [
+    "Anderson Carlos",
+    "Guilherme Lopes",
+    "Heitor Guimarães",
+    "Rafael Barroso",
+    "Sostenes Gutembergue"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/Hguimaraes/bd-fraud",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.2",
+    "jquery": "^3.1.1",
+    "angular-route": "^1.6.2",
+    "materialize": "^0.98.0",
+    "angular-chart.js": "^1.1.1"
+  }
+}

@@ -105,4 +105,4 @@ venv.bak/
 
 # Personal
 /data/
-/src/app/static/libs/
+/web/static/libs/
