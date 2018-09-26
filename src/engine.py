@@ -5,9 +5,13 @@ import threading
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
 from pyspark.ml.feature import StringIndexer
-from pyspark.ml.feature import VectorAssembler
 from pyspark.mllib.linalg import DenseVector
 from pyspark.mllib.regression import LabeledPoint
+from pyspark.ml.feature import OneHotEncoder
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -45,24 +49,26 @@ class FraudEngine:
         self.st_data = self.__clean_data(stream_data)
         
         # Define and train the model
-        self.model = self.__get_model(parsed_df)
+        self.model, self.train_stats = self.__get_model(parsed_df)
 
         # Unpersist RDD
         hist_data.unpersist()
         parsed_df.unpersist()
 
-    def __get_model(self, hRDD):
+    def __get_model(self, df):
         logger.debug("--- Starting model training")
+        train, test = df.randomSplit([0.7, 0.3], seed = 2018)
 
-        # Train the model
-        lr = LogisticRegression(
-            featuresCol = 'features', 
-            labelCol = 'label', 
-            maxIter = 10
-        )
+        # Train a random forest model
+        rf = RandomForestClassifier(labelCol="label", featuresCol="features", numTrees=10)
+        rfmodel= rf.fit(train)
+        
+        # Test and return statistics
+        evaluator = BinaryClassificationEvaluator()
+        predictions = rfmodel.transform(test)
+        stats = evaluator.evaluatoruate(predictions)
 
-        model = lr.fit(hRDD)
-        return model
+        return rfmodel, stats
 
     def __process_stream(self, request):
         pass
