@@ -33,7 +33,7 @@ class FraudEngine:
             .enableHiveSupport() \
             .getOrCreate()
 
-        stream_data = sqlc.read.csv(dt, header = True, inferSchema = True)
+        stream_data = self.sqlc.read.csv(dt, header = True, inferSchema = True)
         logger.debug("-- Retrieved data from data stream CSV")
 
         # Read data from database and put into a DF

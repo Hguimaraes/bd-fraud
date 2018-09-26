@@ -41,7 +41,7 @@ def run_server(app, port):
 if __name__ == "__main__":
     # Init spark context and load libraries
     sc = init_spark_context()
-    app = create_app(sc, '/user/ita-fds/')
+    app = create_app(sc, 'hdfs:////user/ita-fds/')
  
     # start web server
     run_server(app, 8000)
