@@ -1,6 +1,7 @@
 'use strict';
 
 var app = angular.module('ifds', ['ngRoute', 'chart.js']);
+var aws_host = "ec2-18-231-66-221.sa-east-1.compute.amazonaws.com";
 
 app.constant('config', {
   baseURL: ""
@@ -38,7 +39,7 @@ app.controller("DoughnutCtrl", function ($scope, $http, $interval) {
     // Request data to python API
     var req = {
       method: 'GET',
-      url: '/stats'
+      url: aws_host + '/stats'
     }
 
     $http(req).then(function(response){
